@@ -1,0 +1,13 @@
+﻿@model HomeViewModel
+@{
+    ViewBag.pageTitle = "Index home";
+}
+
+@foreach (var table in Model.listTable)
+{
+    <h1>@table.tableName</h1>
+    foreach (var col in table.columns)
+    {
+        <h2>@col.name | @col.type</h2>
+    }
+}
