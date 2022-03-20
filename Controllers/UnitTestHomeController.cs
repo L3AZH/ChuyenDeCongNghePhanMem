@@ -9,7 +9,7 @@ namespace CDCNPM.Controllers
     public class UnitTestHomeController
     {
 
-        public static void testGenerateQuery()
+        public static string testGenerateQuery()
         {
             SqlTable chiNhanhTable = new SqlTable()
             {
@@ -162,7 +162,7 @@ namespace CDCNPM.Controllers
                         tableName = chiNhanhTable.tableName,
                         name = "ChiNhanh"
                     },
-                    isGroupBy = true
+                    //isGroupBy = true
                 },
                 new ObjectQueryPick()
                 {
@@ -172,11 +172,11 @@ namespace CDCNPM.Controllers
                         tableName = nhanVienTable.tableName,
                         name = "TEN"
                     },
-                    columnNameRename = "THis shit must run",
-                    total = "COUNT",
-                    condition = "18956",
-                    orConditionList = new List<string>(){"15651", "15912", "159159" },
-                    isGroupBy = true
+                    /*columnNameRename = "THis shit must run",
+                    total = "COUNT",*/
+                    condition = "Trang",
+                    orConditionList = new List<string>(){"Thu", "Dat", "Anh" },
+                    //isGroupBy = true
                 },
                 new ObjectQueryPick()
                 {
@@ -198,6 +198,7 @@ namespace CDCNPM.Controllers
             };
 
             Utils.log(HomeController.generateQueryFromObjectQueryPick(listObject, listTable));
+            return HomeController.generateQueryFromObjectQueryPick(listObject, listTable);
         }
 
     }

@@ -240,5 +240,34 @@ namespace CDCNPM.Repositories
             }
             return listTable;
         }
+
+        public DataSet getDataSetFromRawQuery(IConfiguration config, string queryString)
+        {
+            Utils.log(queryString);
+            SqlConnection myConn = null;
+            DataSet result = new DataSet();
+            try
+            {
+                string conString = config.GetConnectionString("MSSQLConnection");
+                myConn = new SqlConnection(conString);
+
+                myConn.Open();
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter()
+                {
+                    SelectCommand = new SqlCommand(queryString, myConn)
+                };
+                sqlDataAdapter.Fill(result);
+            }
+            catch(Exception err)
+            {
+                result = null;
+                Utils.log(err.StackTrace);
+            }
+            finally
+            {
+                if (myConn != null) myConn.Close();
+            }
+            return result;
+        }
     }
 }

@@ -1,14 +1,13 @@
 ﻿using CDCNPM.Models;
+using CDCNPM.Reports;
 using CDCNPM.Repositories;
 using CDCNPM.ViewModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CDCNPM.Controllers
 {
@@ -34,14 +33,30 @@ namespace CDCNPM.Controllers
             {
                 listTable = result
             };
-            UnitTestHomeController.testGenerateQuery();
+            Response.Cookies.Append(
+                "query", 
+                UnitTestHomeController.testGenerateQuery(), 
+                new CookieOptions()
+                {
+                    Expires = DateTime.Now.AddSeconds(60*5)
+                });
             return View(homeViewModel);
         }
 
         [Route("report")]
-        public IActionResult Report()
+        public ViewResult Report()
         {
-            return View();
+            string cookieQuery = Request.Cookies["query"];
+            Response.Cookies.Delete("query");
+            DataSet dataSet = sqlRepository.getDataSetFromRawQuery(config, cookieQuery);
+            SampleReport report = new SampleReport()
+            {
+                query = cookieQuery
+            };
+            report.DataSource = dataSet;
+            SampleReport.InitBands(report);
+            SampleReport.InitDetailsBaseXRTable(report, dataSet, "Test");
+            return View(report);
         }
 
         public static string generateQueryFromObjectQueryPick(List<ObjectQueryPick> listObject, List<SqlTable> listTable)
@@ -239,13 +254,13 @@ namespace CDCNPM.Controllers
                     {
                         if (item.orConditionList != null && item.orConditionList.Count > 0)
                         {
-                            queryString += String.Format("({0}.{1} = {2} OR ",
+                            queryString += String.Format("({0}.{1} = \'{2}\' OR ",
                             item.tablePick.tableName,
                             item.columnPick.name,
                             item.condition);
                             foreach (string orCondition in item.orConditionList)
                             {
-                                queryString += String.Format("{0}.{1} = {2} OR ",
+                                queryString += String.Format("{0}.{1} = \'{2}\' OR ",
                                     item.tablePick.tableName,
                                     item.columnPick.name,
                                     orCondition);
@@ -256,7 +271,7 @@ namespace CDCNPM.Controllers
                         }
                         else
                         {
-                            queryString += String.Format("{0}.{1} = {2} AND ",
+                            queryString += String.Format("{0}.{1} = \'{2}\' AND ",
                             item.tablePick.tableName,
                             item.columnPick.name,
                             item.condition);
@@ -269,7 +284,7 @@ namespace CDCNPM.Controllers
                             queryString += "(";
                             foreach (string orCondition in item.orConditionList)
                             {
-                                queryString += String.Format("{0}.{1} = {2} OR ",
+                                queryString += String.Format("{0}.{1} = \'{2}\' OR ",
                                     item.tablePick.tableName,
                                     item.columnPick.name,
                                     orCondition);
@@ -286,5 +301,7 @@ namespace CDCNPM.Controllers
             }
             return queryString;
         }
+
+
     }
 }

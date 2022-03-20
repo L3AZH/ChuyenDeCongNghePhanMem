@@ -2,11 +2,7 @@
 <XtraReportsLayoutSerializer SerializerVersion="19.2.5.0" Ref="0" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v19.2, Version=19.2.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="XtraReport" PageWidth="850" PageHeight="1100" Version="19.2">
   <Bands>
     <Item1 Ref="1" ControlType="TopMarginBand" Name="topMarginBand1" />
-    <Item2 Ref="2" ControlType="DetailBand" Name="detailBand1">
-      <Controls>
-        <Item1 Ref="3" ControlType="XRLabel" Name="label1" Multiline="true" Text="HELLOWORLD" SizeF="100,23" LocationFloat="0, 0" Padding="2,2,0,0,100" />
-      </Controls>
-    </Item2>
-    <Item3 Ref="4" ControlType="BottomMarginBand" Name="bottomMarginBand1" />
+    <Item2 Ref="2" ControlType="DetailBand" Name="detailBand1" />
+    <Item3 Ref="3" ControlType="BottomMarginBand" Name="bottomMarginBand1" />
   </Bands>
 </XtraReportsLayoutSerializer>
