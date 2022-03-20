@@ -75,18 +75,18 @@ namespace CDCNPM.Controllers
                     if (string.IsNullOrEmpty(item.columnNameRename) ||
                         string.IsNullOrWhiteSpace(item.columnNameRename))
                     {
+                        queryString += String.Format("{0}({1}.{2}), ",
+                            item.total,
+                            item.columnPick.tableName,
+                            item.columnPick.name);
+                    }
+                    else
+                    {
                         queryString += String.Format("{0}({1}.{2}) as {3}, ",
                             item.total,
                             item.columnPick.tableName,
                             item.columnPick.name,
                             item.columnNameRename);
-                    }
-                    else
-                    {
-                        queryString += String.Format("{0}({1}.{2}), ",
-                            item.total,
-                            item.columnPick.tableName,
-                            item.columnPick.name);
                     }
                 }
             }
@@ -107,29 +107,178 @@ namespace CDCNPM.Controllers
             /**
              * Generate WHERE section
              **/
-            queryString += "WHERE ";
+            queryString = generateWhereSectionQuery(queryString, listObject, listTable);
             /**
-             * WHERE : JOIN SECTION
+             * GROUP BY ORDER TYPE 
              **/
+            bool needOrderType = false;
+            foreach(ObjectQueryPick item in listObject)
+            {
+                if(!(string.IsNullOrEmpty(item.sortType) ||
+                    string.IsNullOrWhiteSpace(item.sortType)))
+                {
+                    needOrderType = true;
+                    break;
+                }
+            }
+            if (needOrderType)
+            {
+                queryString += "ORDER BY ";
+                foreach (ObjectQueryPick item in listObject)
+                {
+                    switch (item.sortType)
+                    {
+                        case "Asc":
+                            queryString += String.Format("{0}.{1}, ", item.tablePick.tableName, item.columnPick.name);
+                            break;
+                        case "Desc":
+                            queryString += String.Format("{0}.{1} DESC, ", item.tablePick.tableName, item.columnPick.name);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                queryString = queryString.Trim();
+                queryString = queryString.Remove(queryString.Length - 1);
+                queryString += "\n ";
+            }
+            /**
+             * GROUP BY SECTION
+             **/
+            bool needGroupBy = false;
+            foreach (ObjectQueryPick item in listObject)
+            {
+                if (item.isGroupBy)
+                {
+                    needGroupBy = true;
+                    break;
+                }
+            }
+            if (needGroupBy)
+            {
+                queryString += "GROUP BY ";
+                foreach (ObjectQueryPick item in listObject)
+                {
+                    if (item.isGroupBy)
+                    {
+                        queryString += String.Format("{0}.{1}, ", item.tablePick.tableName, item.columnPick.name);
+                    }
+                }
+                queryString = queryString.Trim();
+                queryString = queryString.Remove(queryString.Length - 1);
+                queryString += "\n ";
+            }
+            return queryString;
+        }
+
+        private static string generateWhereSectionQuery(
+            string queryString, 
+            List<ObjectQueryPick> listObject, 
+            List<SqlTable> listTable)
+        {
+            bool isHaveFKConstaint = false;
+            bool isHaveCondition = false;
             foreach(SqlTable table in listTable)
             {
                 if(table.listFK.Count > 0)
                 {
-                    foreach(string item in table.listFK)
+                    isHaveFKConstaint = true;
+                    break;
+                }
+            }
+            foreach(ObjectQueryPick item in listObject)
+            {
+                if(!(string.IsNullOrEmpty(item.condition) ||
+                    string.IsNullOrWhiteSpace(item.condition)))
+                {
+                    isHaveCondition = true;
+                    break;
+                }
+                if(item.orConditionList != null)
+                {
+                    if (item.orConditionList.Count > 0)
                     {
-                        string[] listData = item.Split("-");
-                        queryString += String.Format("({0}.{1} = {2}.{3}) AND ",
-                            table.tableName, listData[0],
-                            listData[1], listData[2]);
+                        isHaveCondition = true;
+                        break;
                     }
                 }
             }
-            /**
-             * WHERE: CONDITION SECTION
-             **/
 
+            if(isHaveFKConstaint || isHaveCondition)
+            {
+                queryString += "WHERE ";
+                /**
+                 * WHERE : JOIN SECTION
+                 **/
+                foreach (SqlTable table in listTable)
+                {
+                    if (table.listFK.Count > 0)
+                    {
+                        foreach (string item in table.listFK)
+                        {
+                            string[] listData = item.Split("-");
+                            queryString += String.Format("({0}.{1} = {2}.{3}) AND ",
+                                table.tableName, listData[0],
+                                listData[1], listData[2]);
+                        }
+                    }
+                }
+                /**
+                * WHERE: CONDITION SECTION
+                **/
+                foreach (ObjectQueryPick item in listObject)
+                {
+                    if (!(string.IsNullOrEmpty(item.condition) ||
+                        string.IsNullOrWhiteSpace(item.condition)))
+                    {
+                        if (item.orConditionList != null && item.orConditionList.Count > 0)
+                        {
+                            queryString += String.Format("({0}.{1} = {2} OR ",
+                            item.tablePick.tableName,
+                            item.columnPick.name,
+                            item.condition);
+                            foreach (string orCondition in item.orConditionList)
+                            {
+                                queryString += String.Format("{0}.{1} = {2} OR ",
+                                    item.tablePick.tableName,
+                                    item.columnPick.name,
+                                    orCondition);
+                            }
+                            queryString = queryString.Trim();
+                            queryString = queryString.Remove(queryString.Length - 3);
+                            queryString += ") AND ";
+                        }
+                        else
+                        {
+                            queryString += String.Format("{0}.{1} = {2} AND ",
+                            item.tablePick.tableName,
+                            item.columnPick.name,
+                            item.condition);
+                        }
+                    }
+                    else
+                    {
+                        if (item.orConditionList != null && item.orConditionList.Count > 0)
+                        {
+                            queryString += "(";
+                            foreach (string orCondition in item.orConditionList)
+                            {
+                                queryString += String.Format("{0}.{1} = {2} OR ",
+                                    item.tablePick.tableName,
+                                    item.columnPick.name,
+                                    orCondition);
+                            }
+                            queryString = queryString.Trim();
+                            queryString = queryString.Remove(queryString.Length - 3);
+                            queryString += ") AND ";
+                        }
+                    }
+                }
+                queryString = queryString.Trim();
+                queryString = queryString.Remove(queryString.Length - 4);
+                queryString += "\n ";
+            }
             return queryString;
         }
-
     }
 }

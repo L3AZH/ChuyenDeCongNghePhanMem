@@ -161,7 +161,8 @@ namespace CDCNPM.Controllers
                     {
                         tableName = chiNhanhTable.tableName,
                         name = "ChiNhanh"
-                    }
+                    },
+                    isGroupBy = true
                 },
                 new ObjectQueryPick()
                 {
@@ -171,7 +172,11 @@ namespace CDCNPM.Controllers
                         tableName = nhanVienTable.tableName,
                         name = "TEN"
                     },
-                    columnNameRename = "THis shit must run"
+                    columnNameRename = "THis shit must run",
+                    total = "COUNT",
+                    condition = "18956",
+                    orConditionList = new List<string>(){"15651", "15912", "159159" },
+                    isGroupBy = true
                 },
                 new ObjectQueryPick()
                 {

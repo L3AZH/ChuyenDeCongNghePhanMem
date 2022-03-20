@@ -17,9 +17,13 @@ namespace CDCNPM.Models
 
         public string condition { get; set; }
 
+        public List<string> orConditionList { get; set; }
+
         public bool isShow { get; set; }
 
         public string sortType { get; set; }
+
+        public bool isGroupBy { get; set; }
 
     }
 }
