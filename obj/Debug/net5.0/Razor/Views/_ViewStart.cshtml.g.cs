@@ -14,20 +14,34 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
 #nullable restore
 #line 1 "D:\C#\ASP.NET\CDCNPM\CDCNPM\Views\_ViewImports.cshtml"
-using CDCNPM.ViewModels;
+using DevExpress.AspNetCore;
 
 #line default
 #line hidden
 #nullable disable
 #nullable restore
 #line 2 "D:\C#\ASP.NET\CDCNPM\CDCNPM\Views\_ViewImports.cshtml"
+using CDCNPM.ViewModels;
+
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 3 "D:\C#\ASP.NET\CDCNPM\CDCNPM\Views\_ViewImports.cshtml"
 using CDCNPM.Models;
 
 #line default
 #line hidden
 #nullable disable
+#nullable restore
+#line 4 "D:\C#\ASP.NET\CDCNPM\CDCNPM\Views\_ViewImports.cshtml"
+using CDCNPM.Reports;
+
+#line default
+#line hidden
+#nullable disable
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"7091c65830b0329e613be026ede8a57552863778", @"/Views/_ViewStart.cshtml")]
-    [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"9033a552905b612823451ee8a632c2f3d7ce7279", @"/Views/_ViewImports.cshtml")]
+    [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"4aeddc06850d0d9d0b31e4ae85ea9c5ddc3649ff", @"/Views/_ViewImports.cshtml")]
     public class Views__ViewStart : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 1998

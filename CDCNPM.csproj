@@ -5,13 +5,31 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Reports\SampleReport.repx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Reports\SampleReport.repx" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\images\" />
     <Folder Include="wwwroot\js\" />
     <Folder Include="wwwroot\css\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="DevExpress.AspNetCore.Reporting" Version="19.2.5" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Reports\SampleReport.cs">
+      <DependentUpon>SampleReport.repx</DependentUpon>
+    </Compile>
+    <Compile Update="Reports\SampleReport.Designer.cs">
+      <DependentUpon>SampleReport.repx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>

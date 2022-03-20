@@ -38,6 +38,12 @@ namespace CDCNPM.Controllers
             return View(homeViewModel);
         }
 
+        [Route("report")]
+        public IActionResult Report()
+        {
+            return View();
+        }
+
         public static string generateQueryFromObjectQueryPick(List<ObjectQueryPick> listObject, List<SqlTable> listTable)
         {
             String queryString = "";
