@@ -130,12 +130,38 @@ namespace CDCNPM.Controllers
              **/
             queryString = generateWhereSectionQuery(queryString, listObject, listTable);
             /**
+             * GROUP BY SECTION
+             **/
+            bool needGroupBy = false;
+            foreach (ObjectQueryPick item in listObject)
+            {
+                if (item.isGroupBy)
+                {
+                    needGroupBy = true;
+                    break;
+                }
+            }
+            if (needGroupBy)
+            {
+                queryString += "GROUP BY ";
+                foreach (ObjectQueryPick item in listObject)
+                {
+                    if (item.isGroupBy)
+                    {
+                        queryString += String.Format("{0}.{1}, ", item.tablePick.tableName, item.columnPick.name);
+                    }
+                }
+                queryString = queryString.Trim();
+                queryString = queryString.Remove(queryString.Length - 1);
+                queryString += "\n ";
+            }
+            /**
              * GROUP BY ORDER TYPE 
              **/
             bool needOrderType = false;
-            foreach(ObjectQueryPick item in listObject)
+            foreach (ObjectQueryPick item in listObject)
             {
-                if(!(string.IsNullOrEmpty(item.sortType) ||
+                if (!(string.IsNullOrEmpty(item.sortType) ||
                     string.IsNullOrWhiteSpace(item.sortType)))
                 {
                     needOrderType = true;
@@ -157,32 +183,6 @@ namespace CDCNPM.Controllers
                             break;
                         default:
                             break;
-                    }
-                }
-                queryString = queryString.Trim();
-                queryString = queryString.Remove(queryString.Length - 1);
-                queryString += "\n ";
-            }
-            /**
-             * GROUP BY SECTION
-             **/
-            bool needGroupBy = false;
-            foreach (ObjectQueryPick item in listObject)
-            {
-                if (item.isGroupBy)
-                {
-                    needGroupBy = true;
-                    break;
-                }
-            }
-            if (needGroupBy)
-            {
-                queryString += "GROUP BY ";
-                foreach (ObjectQueryPick item in listObject)
-                {
-                    if (item.isGroupBy)
-                    {
-                        queryString += String.Format("{0}.{1}, ", item.tablePick.tableName, item.columnPick.name);
                     }
                 }
                 queryString = queryString.Trim();
