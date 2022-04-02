@@ -4,18 +4,349 @@
 }
 
 
-<div class="row">
-    <div class="col-5 col-md-2 width m-0 p-0 bg-dark collapse show">
-        <ul class="nav flex-column navbar-dark sticky-top">
-            @foreach (var table in Model.listTable)
-            {
-                <li class="nav-item">
-                    <h4 class="text-white">@table.tableName</h4>
-                </li>
-            }
-        </ul>
+<div class="flex h-screen">
+    <div class="sidebar_table_sql w-1/6 h-full bg-sky-500/100 overflow-auto p-[15px]">
     </div>
-    <div class="col">
+    <div class="w-5/6 h-full bg-cyan-500 overflow-auto px-[20px] py-[15px]">
+        <div id="query-section">
+            <div class="mt-[10px] w-full border-2 border-solid border-neutral-300 rounded px-[20px] py-[20px]">
+                <h2 class="mb-[10px]">Query</h2>
+                <div class="grid grid-cols-12">
+                    <div class="col-span-9">
+                        <div>
+                            <textarea id="show-query-area" class="resize-none rounded h-[150px] w-full focus:outline-hidden px-[10px] py[10px]"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-span-3">
+                        <div class="ml-[15px]">
+                            <button id="create-query"
+                                    type="button"
+                                    class="text-gray-900 bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 mr-2 mb-2">
+                                Create query
+                            </button>
+                            <button type="button"
+                                    class="text-gray-900 bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 mr-2 mb-2">
+                                <a asp-controller="home" asp-action="report">Create report</a>
+                            </button>
+                            <button type="button"
+                                    class="text-gray-900 bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 mr-2 mb-2">
+                                Clear selected tables
+                            </button>
+                            <button type="button"
+                                    class="text-gray-900 bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 mr-2 mb-2">
+                                clear selected columns
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <div id="table-section"
+             class="mt-[10px] w-full border-2 border-solid border-neutral-300 px-[20px] py-[20px] mt-8">
+            <div id="table-header-name" class="grid grid-cols-12 gap-3">
+                <div class="header-title font-bold text-[12px] col-span-1">
+                    TableName
+                </div>
+                <div class="header-title font-bold text-[12px] col-span-1">
+                    FieldName
+                </div>
+                <div class="header-title font-bold text-[12px] col-span-3">
+                    RenameField
+                </div>
+                <div class="header-title font-bold text-[12px] col-span-1">
+                    Total
+                </div>
+                <div class="header-title font-bold text-[12px] col-span-1">
+                    IsSort
+                </div>
+                <div class="header-title font-bold text-[12px] col-span-1">
+                    IsShow
+                </div>
+                <div class="header-title font-bold text-[12px] col-span-2">
+                    Condition
+                </div>
+                <div class="header-title font-bold text-[12px] col-span-2">
+                    OrCondition
+                </div>
+            </div>
+        </div>
+        <div class="column-container border-solid border-2 border-neutral-300 px-[20px] py-[10px] rounded mt-8">
+            <h2 class="font-bold mb-[5px]">Columns List</h2>
+            <div class="col-wrapper">
+            </div>
+        </div>
     </div>
 </div>
+
+
+@section Scripts{
+    <script type="text/javascript">
+
+
+        const dataPresent = JSON.parse('@Json.Serialize(@Model.listTable)');
+        console.log(dataPresent)
+
+        const table_str_condition = (tableName, colName) => `
+          <div
+            class="grid grid-cols-12 gap-3 mt-8 query-wrapper"
+            data-col="${colName}"
+            data-table="${tableName}"
+          >
+            <div class="content-table-name font-bold text-[12px] col-span-1">
+              ${tableName}
+            </div>
+            <div
+              class="content-table-fieldname font-bold text-[12px] col-span-1"
+            >
+              ${colName}
+            </div>
+            <div class="content-table-rename font-bold text-[12px] col-span-3">
+              <input
+                class="shadow appearance-none border border-neutral-300 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                id="rename-${colName}-${tableName}"
+                type="text"
+                placeholder="Rename field"
+              />
+            </div>
+            <div class="font-bold text-[12px] col-span-1">
+              <div class="flex justify-center">
+                <div class="mb-3">
+                  <select
+                    id="total-select-${colName}-${tableName}"
+                    class="form-select appearance-none block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+                    aria-label="Default select example"
+                  >
+                    <option value="None">Select</option>
+                    <option value="MAX">Max</option>
+                    <option value="MIN">Min</option>
+                    <option value="COUNT">Count</option>
+                    <option value="SUM">Sum</option>
+                    <option value="GROUP BY">Group by</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="font-bold text-[12px] col-span-1">
+              <div class="mb-3">
+                <select
+                  id="isSort-${colName}-${tableName}"
+                  class="form-select appearance-none block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+                  aria-label="Default select example"
+                >
+                  <option value="None">None</option>
+                  <option value="ASC">Asc</option>
+                  <option value="DESC">Desc</option>
+                </select>
+              </div>
+            </div>
+            <div class="font-bold text-[12px] col-span-1">
+              <div class="flex">
+                <label class="flex items-center">
+                  <input
+                    id="isShow-${colName}-${tableName}"
+                    type="checkbox"
+                    class="form-checkbox h-5 w-5 text-gray-600"
+                    value="IsShow"
+                  />
+                  <span class="ml-[5px]">isShow</span>
+                </label>
+              </div>
+            </div>
+            <div class="font-bold text-[12px] col-span-2">
+              <input
+                id="condition-${colName}-${tableName}"
+                class="shadow appearance-none border border-neutral-300 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                id="Rename"
+                type="text"
+                placeholder="Condition"
+              />
+            </div>
+            <div class="font-bold text-[12px] col-span-2">
+              <input
+                id="or-condition-${colName}-${tableName}"
+                class="shadow appearance-none border border-neutral-300 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                id="Rename"
+                type="text"
+                placeholder="Or conditiom"
+              />
+            </div>
+          </div>`;
+
+        let selectedTables = [];
+        let selectedCols = [];
+        const initOption = {
+            total: null,
+            sortType: null,
+            isShow: null,
+            condition: "",
+            orConditionList: "",
+            isGroupBy: false
+        };
+        const checkboxTables = document.querySelectorAll(".table-sql-check");
+        const checkboxColsOfTableHtml = document.querySelectorAll(".col-table-check");
+
+        $(document).ready(function () {
+            //////
+
+            let checkboxTablesHtml = "";
+            let checkboxColsOfTableHtml = "";
+            const createQueryBtn = $("#create-query");
+            const hide = ` <div
+                class="hide bg-neutral-100/[0.5] w-full h-full absolute rounded top-0 left-0"
+              ></div>`;
+            dataPresent.forEach((ele) => {
+                checkboxTablesHtml = checkboxTablesHtml.concat(`
+     <div class="flex mt-4">
+          <label class="flex items-center">
+            <input
+              type="checkbox"
+              class="form-checkbox h-5 w-5 text-gray-600 table-sql-check"
+              value=${ele.tableName}
+            />
+            <span class="ml-[5px]">${ele.tableName}</span>
+          </label>
+        </div>
+  `);
+            });
+
+            $(".sidebar_table_sql").append(checkboxTablesHtml);
+            //////
+
+            /////
+            dataPresent.forEach((ele) => {
+                let colsChecHtml = "";
+                ele.columns.forEach((ele) => {
+                    colsChecHtml = colsChecHtml.concat(`
+              <div class="flex flex-wrap mr-[10px]">
+                <div class="flex mt-4">
+                  <label class="flex items-center">
+                    <input
+                      type="checkbox"
+                      class="form-checkbox h-5 w-5 text-gray-600 col-table-check"
+                      value="${ele.name}"
+                      data-table="${ele.tableName}"
+                    />
+                    <span class="ml-[5px] font-medium">${ele.name}</span>
+                  </label>
+                </div>
+              </div>
+      `);
+                });
+
+                checkboxColsOfTableHtml = checkboxColsOfTableHtml.concat(`
+              <div
+                class="relative column-item border-solid border-2 border-neutral-300 px-[20px] py-[15px] rounded mt-3"
+                data-table = "${ele.tableName}"
+              >
+              ${hide}
+              <h2 class="font-bold">${ele.tableName}</h2>
+
+               <div class="flex flex-wrap">
+                 ${colsChecHtml}
+               </div>
+
+            </div>
+      `);
+            });
+            /////
+
+            ////////
+
+            $(".col-wrapper").append(checkboxColsOfTableHtml);
+
+            ////////
+            $(".table-sql-check").on("click", (e) => {
+                const { value, checked } = e.target;
+
+                if (checked) {
+                    selectedTables.push(
+                        dataPresent.find((ele) => ele.tableName === value).tableName
+                    );
+                    $(`.column-item[data-table='${value}'] .hide`).remove();
+                } else {
+                    selectedTables = selectedTables.filter((ele) => ele !== value);
+                    selectedCols = selectedCols.filter(ele => ele.tableName !== value);
+                    $(`.column-item[data-table='${value}']`).append(hide);
+                    $(`.column-item[data-table='${value}'] .col-table-check`).prop(
+                        "checked",
+                        false
+                    );
+                    $(`#table-section .query-wrapper[data-table="${value}"]`).remove();
+                }
+            });
+
+            $(".col-table-check").on("click", (e) => {
+                const { value, checked, dataset } = e.target;
+                const table = dataset.table;
+
+                const foundCol = dataPresent
+                    .find((ele) => ele.tableName === table)
+                    .columns.find((ele) => ele.name === value);
+                if (checked) {
+                    selectedCols.push({ ...foundCol, options: initOption });
+                    $("#table-section").append(
+                        table_str_condition(foundCol.tableName, foundCol.name)
+                    );
+                } else {
+                    selectedCols = selectedCols.filter(
+                        (ele) => ele?.name !== value && ele?.tableName === table
+                    );
+
+                    $(
+                        `#table-section .query-wrapper[data-col="${foundCol.name}"]`
+                    ).remove();
+                }
+            });
+
+            createQueryBtn.on("click", () => {
+                selectedCols = selectedCols.map((ele) => ({
+                    ...ele,
+                    options: {
+                        ...ele.options,
+                        tablePick: dataPresent.find((eleRoot) => eleRoot.tableName == ele.tableName),
+                        columnPick: dataPresent
+                            .find((eleRoot) => eleRoot.tableName === ele.tableName)
+                            .columns.find((eleRoot2) => eleRoot2.name === ele.name),
+                        columnNameRename: $(`#rename-${ele.name}-${ele.tableName}`).val(),
+                        isShow: $(`#isShow-${ele.name}-${ele.tableName}`).is(":checked"),
+                        sortType: $(`#isSort-${ele.name}-${ele.tableName}`).val(),
+                        total: $(`#total-select-${ele.name}-${ele.tableName}`).val(),
+                        condition: $(`#condition-${ele.name}-${ele.tableName}`).val() === "" ?
+                            null : $(`#condition-${ele.name}-${ele.tableName}`).val(),
+                        orConditionList: $(
+                            `#or-condition-${ele.name}-${ele.tableName}`
+                        ).val() === "" ?
+                            null : $(
+                                `#or-condition-${ele.name}-${ele.tableName}`
+                            ).val().split(","),
+                    },
+                }));
+                var selectedTables2 = selectedTables.map((tableName) => dataPresent.find((ele) => ele.tableName === tableName));
+                var selectedCols2 = selectedCols.map((ele) => ele.options);
+                console.log(selectedCols2);
+                console.log(selectedTables2);
+                const request = {
+                    tablePick: selectedTables2,
+                    listObject: selectedCols2
+                }
+                console.log(request)
+                $.ajax({
+                    contentType: "application/json",
+                    dataType: 'json',
+                    type: "POST",
+                    url: "/home/ResultQuery",
+
+                    data: JSON.stringify(request),
+                    success: function (data) {
+                        $("#show-query-area").val(JSON.stringify(data));
+                        console.log("output : " + JSON.stringify(data));
+                    },
+                    error: function (data) {
+                        console.log("error : " + JSON.stringify(data));
+                    },
+                })
+            });
+        });
+    </script>
+}

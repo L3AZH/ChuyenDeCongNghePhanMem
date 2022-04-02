@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CDCNPM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              clifford: "#da373d",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body>
+    <div class="flex h-screen">
+      <div
+        class="sidebar_table_sql w-1/6 h-full bg-sky-500/100 overflow-auto p-[15px]"
+      >
+        <!-- <div class="flex mt-4">
+          <label class="flex items-center">
+            <input
+              type="checkbox"
+              class="form-checkbox h-5 w-5 text-gray-600 table-sql-check"
+              value="NhanVien"
+            />
+            <span class="ml-[5px]">NhanVien</span>
+          </label>
+        </div> -->
+      </div>
+      <div class="w-5/6 h-full bg-cyan-500 overflow-auto px-[20px] py-[15px]">
+        <div id="query-section">
+          <div
+            class="mt-[10px] w-full border-2 border-solid border-neutral-300 rounded px-[20px] py-[20px]"
+          >
+            <h2 class="mb-[10px]">Query</h2>
+            <div class="grid grid-cols-12">
+              <div class="col-span-9">
+                <!-- <textarea class="resize-none rounded h-[300px] w-full"></textarea> -->
+                <div>
+                  <textarea
+                    class="resize-none rounded h-[150px] w-full focus:outline-hidden px-[10px] py[10px]"
+                  ></textarea>
+                </div>
+              </div>
+              <div class="col-span-3">
+                <div class="ml-[15px]">
+                  <button
+                    id="create-query"
+                    type="button"
+                    class="text-gray-900 bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 mr-2 mb-2"
+                  >
+                    Create query
+                  </button>
+                  <button
+                    type="button"
+                    class="text-gray-900 bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 mr-2 mb-2"
+                  >
+                    Create report
+                  </button>
+                  <button
+                    type="button"
+                    class="text-gray-900 bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 mr-2 mb-2"
+                  >
+                    Clear selected tables
+                  </button>
+                  <button
+                    type="button"
+                    class="text-gray-900 bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 mr-2 mb-2"
+                  >
+                    clear selected columns
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="table-section"
+          class="mt-[10px] w-full border-2 border-solid border-neutral-300 px-[20px] py-[20px] mt-8"
+        >
+          <div id="table-header-name" class="grid grid-cols-12 gap-3">
+            <div class="header-title font-bold text-[12px] col-span-1">
+              TableName
+            </div>
+            <div class="header-title font-bold text-[12px] col-span-1">
+              FieldName
+            </div>
+            <div class="header-title font-bold text-[12px] col-span-3">
+              RenameField
+            </div>
+            <div class="header-title font-bold text-[12px] col-span-1">
+              Total
+            </div>
+            <div class="header-title font-bold text-[12px] col-span-1">
+              IsSort
+            </div>
+            <div class="header-title font-bold text-[12px] col-span-1">
+              IsShow
+            </div>
+            <div class="header-title font-bold text-[12px] col-span-2">
+              Condition
+            </div>
+            <div class="header-title font-bold text-[12px] col-span-2">
+              OrCondition
+            </div>
+          </div>
+        </div>
+        <div
+          class="column-container border-solid border-2 border-neutral-300 px-[20px] py-[10px] rounded mt-8"
+        >
+          <h2 class="font-bold mb-[5px]">Columns List</h2>
+          <div class="col-wrapper">
+            <!-- <div
+              class="relative column-item border-solid border-2 border-neutral-300 px-[20px] py-[15px] rounded mt-3"
+            >
+              <div
+                class="bg-neutral-100/[0.5] w-full h-full absolute rounded top-0 left-0"
+              ></div>
+              <h2 class="font-bold">CTDDH</h2>
+              <div class="flex flex-wrap">
+                <div class="flex mt-4">
+                  <label class="flex items-center">
+                    <input
+                      type="checkbox"
+                      class="form-checkbox h-5 w-5 text-gray-600 col-table-check"
+                      value="Kho"
+                      data-table="KHO"
+                    />
+                    <span class="ml-[5px] font-medium">Kho</span>
+                  </label>
+                </div>
+              </div>
+            </div> -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script
+    src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
+    integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI="
+    crossorigin="anonymous"
+  ></script>
+  <script src="./index.js"></script>
+</html>

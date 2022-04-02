@@ -33,14 +33,22 @@ namespace CDCNPM.Controllers
             {
                 listTable = result
             };
+            return View(homeViewModel);
+        }
+
+        [HttpPost]
+        [Route("ResultQuery")]
+        public JsonResult ResultQuery([FromBody] ObjectRequestFromJs request)
+        {
+            string queryResult = generateQueryFromObjectQueryPick(request.listObject, request.tablePick).Replace("\n", "  ");
             Response.Cookies.Append(
-                "query", 
-                UnitTestHomeController.testGenerateQuery(), 
+                "query",
+                queryResult,
                 new CookieOptions()
                 {
-                    Expires = DateTime.Now.AddSeconds(60*5)
+                    Expires = DateTime.Now.AddSeconds(60 * 5)
                 });
-            return View(homeViewModel);
+            return Json(queryResult);
         }
 
         [Route("report")]
@@ -68,46 +76,50 @@ namespace CDCNPM.Controllers
             queryString += "SELECT ";
             foreach(ObjectQueryPick item in listObject)
             {
-                if(string.IsNullOrEmpty(item.total) ||
-                    string.IsNullOrWhiteSpace(item.total))
+                if (item.isShow)
                 {
-                    /**
-                    * check if user had a custome name or rename and it had total field
-                    **/
-                    if (string.IsNullOrEmpty(item.columnNameRename) ||
-                        string.IsNullOrWhiteSpace(item.columnNameRename))
+                    if (string.IsNullOrEmpty(item.total) ||
+                    string.IsNullOrWhiteSpace(item.total) || "None".Equals(item.total))
                     {
-                        queryString += String.Format("{0}.{1}, ",
-                            item.columnPick.tableName,
-                            item.columnPick.name);
+                        /**
+                        * check if user had a custome name or rename and it had total field
+                        **/
+                        if (string.IsNullOrEmpty(item.columnNameRename) ||
+                            string.IsNullOrWhiteSpace(item.columnNameRename))
+                        {
+                            queryString += String.Format("{0}.{1}, ",
+                                item.columnPick.tableName,
+                                item.columnPick.name);
+                        }
+                        else
+                        {
+                            queryString += String.Format("{0}.{1} as {2}, ",
+                                item.columnPick.tableName,
+                                item.columnPick.name,
+                                item.columnNameRename);
+                        }
                     }
                     else
                     {
-                        queryString += String.Format("{0}.{1} as {2}, ",
-                            item.columnPick.tableName,
-                            item.columnPick.name,
-                            item.columnNameRename);
-                    }
-                } else
-                {
-                    /**
-                     * check if user had a custome name or rename
-                     **/
-                    if (string.IsNullOrEmpty(item.columnNameRename) ||
-                        string.IsNullOrWhiteSpace(item.columnNameRename))
-                    {
-                        queryString += String.Format("{0}({1}.{2}), ",
-                            item.total,
-                            item.columnPick.tableName,
-                            item.columnPick.name);
-                    }
-                    else
-                    {
-                        queryString += String.Format("{0}({1}.{2}) as {3}, ",
-                            item.total,
-                            item.columnPick.tableName,
-                            item.columnPick.name,
-                            item.columnNameRename);
+                        /**
+                         * check if user had a custome name or rename
+                         **/
+                        if (string.IsNullOrEmpty(item.columnNameRename) ||
+                            string.IsNullOrWhiteSpace(item.columnNameRename))
+                        {
+                            queryString += String.Format("{0}({1}.{2}), ",
+                                item.total,
+                                item.columnPick.tableName,
+                                item.columnPick.name);
+                        }
+                        else
+                        {
+                            queryString += String.Format("{0}({1}.{2}) as {3}, ",
+                                item.total,
+                                item.columnPick.tableName,
+                                item.columnPick.name,
+                                item.columnNameRename);
+                        }
                     }
                 }
             }
@@ -162,7 +174,7 @@ namespace CDCNPM.Controllers
             foreach (ObjectQueryPick item in listObject)
             {
                 if (!(string.IsNullOrEmpty(item.sortType) ||
-                    string.IsNullOrWhiteSpace(item.sortType)))
+                    string.IsNullOrWhiteSpace(item.sortType) || "None".Equals(item.sortType)))
                 {
                     needOrderType = true;
                     break;
@@ -175,10 +187,10 @@ namespace CDCNPM.Controllers
                 {
                     switch (item.sortType)
                     {
-                        case "Asc":
+                        case "ASC":
                             queryString += String.Format("{0}.{1}, ", item.tablePick.tableName, item.columnPick.name);
                             break;
-                        case "Desc":
+                        case "DESC":
                             queryString += String.Format("{0}.{1} DESC, ", item.tablePick.tableName, item.columnPick.name);
                             break;
                         default:
@@ -203,8 +215,16 @@ namespace CDCNPM.Controllers
             {
                 if(table.listFK.Count > 0)
                 {
-                    isHaveFKConstaint = true;
-                    break;
+                    foreach(string item in table.listFK)
+                    {
+                        string[] listData = item.Split("-");
+                        if(listTable.Find(ele => ele.tableName.Equals(listData[1])) != null)
+                        {
+                            isHaveFKConstaint = true;
+                            break;
+                        }
+                    }
+                    if (isHaveFKConstaint) break;
                 }
             }
             foreach(ObjectQueryPick item in listObject)
@@ -224,8 +244,8 @@ namespace CDCNPM.Controllers
                     }
                 }
             }
-
-            if(isHaveFKConstaint || isHaveCondition)
+            Utils.log(string.Format("This shit must run isHaveFKConstaint: {0},isHaveCondition {1}", isHaveFKConstaint, isHaveCondition));
+            if (isHaveFKConstaint || isHaveCondition)
             {
                 queryString += "WHERE ";
                 /**
@@ -238,9 +258,13 @@ namespace CDCNPM.Controllers
                         foreach (string item in table.listFK)
                         {
                             string[] listData = item.Split("-");
-                            queryString += String.Format("({0}.{1} = {2}.{3}) AND ",
+                            SqlTable checkConnect = listTable.Find(ele => ele.tableName.Equals(listData[1]));
+                            if(checkConnect != null)
+                            {
+                                queryString += String.Format("({0}.{1} = {2}.{3}) AND ",
                                 table.tableName, listData[0],
                                 listData[1], listData[2]);
+                            }
                         }
                     }
                 }
@@ -260,10 +284,13 @@ namespace CDCNPM.Controllers
                             item.condition);
                             foreach (string orCondition in item.orConditionList)
                             {
-                                queryString += String.Format("{0}.{1} = \'{2}\' OR ",
+                                if (!string.IsNullOrWhiteSpace(orCondition))
+                                {
+                                    queryString += String.Format("{0}.{1} = \'{2}\' OR ",
                                     item.tablePick.tableName,
                                     item.columnPick.name,
                                     orCondition);
+                                }
                             }
                             queryString = queryString.Trim();
                             queryString = queryString.Remove(queryString.Length - 3);
@@ -284,10 +311,13 @@ namespace CDCNPM.Controllers
                             queryString += "(";
                             foreach (string orCondition in item.orConditionList)
                             {
-                                queryString += String.Format("{0}.{1} = \'{2}\' OR ",
+                                if (!string.IsNullOrWhiteSpace(orCondition))
+                                {
+                                    queryString += String.Format("{0}.{1} = \'{2}\' OR ",
                                     item.tablePick.tableName,
                                     item.columnPick.name,
                                     orCondition);
+                                }
                             }
                             queryString = queryString.Trim();
                             queryString = queryString.Remove(queryString.Length - 3);
@@ -301,7 +331,5 @@ namespace CDCNPM.Controllers
             }
             return queryString;
         }
-
-
     }
 }
