@@ -26,7 +26,7 @@
                             </button>
                             <button type="button"
                                     class="text-gray-900 bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 mr-2 mb-2">
-                                <a asp-controller="home" asp-action="report">Create report</a>
+                                <a asp-controller="home" asp-action="report" target="_blank">Create report</a>
                             </button>
                             <button type="button"
                                     class="text-gray-900 bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 mr-2 mb-2">
@@ -44,29 +44,32 @@
 
         <div id="table-section"
              class="mt-[10px] w-full border-2 border-solid border-neutral-300 px-[20px] py-[20px] mt-8">
-            <div id="table-header-name" class="grid grid-cols-12 gap-3">
+            <div id="table-header-name" class="grid grid-cols-16 gap-3">
                 <div class="header-title font-bold text-[12px] col-span-1">
                     TableName
                 </div>
                 <div class="header-title font-bold text-[12px] col-span-1">
                     FieldName
                 </div>
-                <div class="header-title font-bold text-[12px] col-span-3">
+                <div class="header-title font-bold text-[12px] col-span-2">
                     RenameField
                 </div>
-                <div class="header-title font-bold text-[12px] col-span-1">
+                <div class="header-title font-bold text-[12px] col-span-2">
                     Total
                 </div>
-                <div class="header-title font-bold text-[12px] col-span-1">
+                <div class="header-title font-bold text-[12px] col-span-2">
                     IsSort
                 </div>
                 <div class="header-title font-bold text-[12px] col-span-1">
                     IsShow
                 </div>
-                <div class="header-title font-bold text-[12px] col-span-2">
+                <div class="header-title font-bold text-[12px] col-span-1">
+                    GroupBy
+                </div>
+                <div class="header-title font-bold text-[12px] col-span-3">
                     Condition
                 </div>
-                <div class="header-title font-bold text-[12px] col-span-2">
+                <div class="header-title font-bold text-[12px] col-span-3">
                     OrCondition
                 </div>
             </div>
@@ -83,13 +86,25 @@
 @section Scripts{
     <script type="text/javascript">
 
+        (function ($) {
+            $.fn.invisible = function () {
+                return this.each(function () {
+                    $(this).css("visibility", "hidden");
+                });
+            };
+            $.fn.visible = function () {
+                return this.each(function () {
+                    $(this).css("visibility", "visible");
+                });
+            };
+        }(jQuery));
 
         const dataPresent = JSON.parse('@Json.Serialize(@Model.listTable)');
         console.log(dataPresent)
 
         const table_str_condition = (tableName, colName) => `
           <div
-            class="grid grid-cols-12 gap-3 mt-8 query-wrapper"
+            class="grid grid-cols-16 gap-3 mt-8 query-wrapper"
             data-col="${colName}"
             data-table="${tableName}"
           >
@@ -101,7 +116,7 @@
             >
               ${colName}
             </div>
-            <div class="content-table-rename font-bold text-[12px] col-span-3">
+            <div class="content-table-rename font-bold text-[12px] col-span-2">
               <input
                 class="shadow appearance-none border border-neutral-300 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
                 id="rename-${colName}-${tableName}"
@@ -109,8 +124,8 @@
                 placeholder="Rename field"
               />
             </div>
-            <div class="font-bold text-[12px] col-span-1">
-              <div class="flex justify-center">
+            <div class="font-bold text-[12px] col-span-2">
+              <div class="">
                 <div class="mb-3">
                   <select
                     id="total-select-${colName}-${tableName}"
@@ -122,12 +137,11 @@
                     <option value="MIN">Min</option>
                     <option value="COUNT">Count</option>
                     <option value="SUM">Sum</option>
-                    <option value="GROUP BY">Group by</option>
                   </select>
                 </div>
               </div>
             </div>
-            <div class="font-bold text-[12px] col-span-1">
+            <div class="font-bold text-[12px] col-span-2">
               <div class="mb-3">
                 <select
                   id="isSort-${colName}-${tableName}"
@@ -153,7 +167,20 @@
                 </label>
               </div>
             </div>
-            <div class="font-bold text-[12px] col-span-2">
+            <div class="font-bold text-[12px] col-span-1">
+              <div class="flex">
+                <label class="flex items-center">
+                  <input
+                    id="groupBy-${colName}-${tableName}"
+                    type="checkbox"
+                    class="form-checkbox h-5 w-5 text-gray-600"
+                    value="GroupBy"
+                  />
+                  <span class="ml-[5px]">groupBy</span>
+                </label>
+              </div>
+            </div>
+            <div class="font-bold text-[12px] col-span-3">
               <input
                 id="condition-${colName}-${tableName}"
                 class="shadow appearance-none border border-neutral-300 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
@@ -162,7 +189,7 @@
                 placeholder="Condition"
               />
             </div>
-            <div class="font-bold text-[12px] col-span-2">
+            <div class="font-bold text-[12px] col-span-3">
               <input
                 id="or-condition-${colName}-${tableName}"
                 class="shadow appearance-none border border-neutral-300 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
@@ -237,7 +264,8 @@
                 checkboxColsOfTableHtml = checkboxColsOfTableHtml.concat(`
               <div
                 class="relative column-item border-solid border-2 border-neutral-300 px-[20px] py-[15px] rounded mt-3"
-                data-table = "${ele.tableName}"
+                data-table = "${ele.tableName}" 
+                id="UIColOfTable-${ele.tableName}"
               >
               ${hide}
               <h2 class="font-bold">${ele.tableName}</h2>
@@ -254,7 +282,9 @@
             ////////
 
             $(".col-wrapper").append(checkboxColsOfTableHtml);
-
+            dataPresent.forEach((ele) => {
+                $(`#UIColOfTable-${ele.tableName}`).invisible();
+            })
             ////////
             $(".table-sql-check").on("click", (e) => {
                 const { value, checked } = e.target;
@@ -264,6 +294,7 @@
                         dataPresent.find((ele) => ele.tableName === value).tableName
                     );
                     $(`.column-item[data-table='${value}'] .hide`).remove();
+                    $(`#UIColOfTable-${value}`).visible();
                 } else {
                     selectedTables = selectedTables.filter((ele) => ele !== value);
                     selectedCols = selectedCols.filter(ele => ele.tableName !== value);
@@ -273,6 +304,7 @@
                         false
                     );
                     $(`#table-section .query-wrapper[data-table="${value}"]`).remove();
+                    $(`#UIColOfTable-${value}`).invisible();
                 }
             });
 
@@ -290,11 +322,10 @@
                     );
                 } else {
                     selectedCols = selectedCols.filter(
-                        (ele) => ele?.name !== value && ele?.tableName === table
+                        (ele) => `${ele.tableName}-${ele.name}` !== `${table}-${value}`
                     );
-
                     $(
-                        `#table-section .query-wrapper[data-col="${foundCol.name}"]`
+                        `#table-section .query-wrapper[data-col="${foundCol.name}"][data-table="${table}"]`
                     ).remove();
                 }
             });
@@ -310,6 +341,7 @@
                             .columns.find((eleRoot2) => eleRoot2.name === ele.name),
                         columnNameRename: $(`#rename-${ele.name}-${ele.tableName}`).val(),
                         isShow: $(`#isShow-${ele.name}-${ele.tableName}`).is(":checked"),
+                        isGroupBy: $(`#groupBy-${ele.name}-${ele.tableName}`).is(":checked"),
                         sortType: $(`#isSort-${ele.name}-${ele.tableName}`).val(),
                         total: $(`#total-select-${ele.name}-${ele.tableName}`).val(),
                         condition: $(`#condition-${ele.name}-${ele.tableName}`).val() === "" ?
@@ -322,13 +354,9 @@
                             ).val().split(","),
                     },
                 }));
-                var selectedTables2 = selectedTables.map((tableName) => dataPresent.find((ele) => ele.tableName === tableName));
-                var selectedCols2 = selectedCols.map((ele) => ele.options);
-                console.log(selectedCols2);
-                console.log(selectedTables2);
                 const request = {
-                    tablePick: selectedTables2,
-                    listObject: selectedCols2
+                    tablePick: selectedTables.map((tableName) => dataPresent.find((ele) => ele.tableName === tableName)),
+                    listObject: selectedCols.map((ele) => ele.options)
                 }
                 console.log(request)
                 $.ajax({
@@ -348,5 +376,6 @@
                 })
             });
         });
+
     </script>
 }
