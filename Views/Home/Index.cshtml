@@ -99,6 +99,40 @@
             };
         }(jQuery));
 
+        function createUIColumnOfTable(tableObject) {
+            let htmlResult = "";
+            let colsChecHtml = "";
+            tableObject.columns.forEach((ele) => {
+                colsChecHtml = colsChecHtml.concat(`
+              <div class="flex flex-wrap mr-[10px]">
+                <div class="flex mt-4">
+                  <label class="flex items-center">
+                    <input
+                      type="checkbox"
+                      class="form-checkbox h-5 w-5 text-gray-600 col-table-check-${ele.tableName}"
+                      value="${ele.name}"
+                      data-table="${ele.tableName}"
+                    />
+                    <span class="ml-[5px] font-medium">${ele.name}</span>
+                  </label>
+                </div>
+              </div>`);
+            });
+            return htmlResult.concat(`
+              <div
+                class="relative column-item border-solid border-2 border-neutral-300 px-[20px] py-[15px] rounded mt-3"
+                data-table = "${tableObject.tableName}" 
+                id="UIColOfTable-${tableObject.tableName}"
+              >
+              <h2 class="font-bold">${tableObject.tableName}</h2>
+
+               <div class="flex flex-wrap">
+                 ${colsChecHtml}
+               </div>
+
+            </div>`);
+        }
+
         const dataPresent = JSON.parse('@Json.Serialize(@Model.listTable)');
         console.log(dataPresent)
 
@@ -199,7 +233,6 @@
               />
             </div>
           </div>`;
-
         let selectedTables = [];
         let selectedCols = [];
         const initOption = {
@@ -281,10 +314,10 @@
 
             ////////
 
-            $(".col-wrapper").append(checkboxColsOfTableHtml);
-            dataPresent.forEach((ele) => {
+            //$(".col-wrapper").append(checkboxColsOfTableHtml);
+            @*dataPresent.forEach((ele) => {
                 $(`#UIColOfTable-${ele.tableName}`).invisible();
-            })
+            })*@
             ////////
             $(".table-sql-check").on("click", (e) => {
                 const { value, checked } = e.target;
@@ -293,22 +326,48 @@
                     selectedTables.push(
                         dataPresent.find((ele) => ele.tableName === value).tableName
                     );
-                    $(`.column-item[data-table='${value}'] .hide`).remove();
-                    $(`#UIColOfTable-${value}`).visible();
+                   
+                    $(".col-wrapper").append(createUIColumnOfTable(dataPresent.find((ele) => ele.tableName === value)));
+                    $(`.col-table-check-${value}`).on("click", (e) => {
+                        const { value, checked, dataset } = e.target;
+                        const table = dataset.table;
+
+                        const foundCol = dataPresent
+                            .find((ele) => ele.tableName === table)
+                            .columns.find((ele) => ele.name === value);
+                        if (checked) {
+                            selectedCols.push({ ...foundCol, options: initOption });
+                            $("#table-section").append(
+                                table_str_condition(foundCol.tableName, foundCol.name)
+                            );
+                        } else {
+                            selectedCols = selectedCols.filter(
+                                (ele) => `${ele.tableName}-${ele.name}` !== `${table}-${value}`
+                            );
+                            $(
+                                `#table-section .query-wrapper[data-col="${foundCol.name}"][data-table="${table}"]`
+                            ).remove();
+                        }
+                    });
+                    /*$(`.column-item[data-table='${value}'] .hide`).remove();
+                    $(`#UIColOfTable-${value}`).visible();*/
                 } else {
                     selectedTables = selectedTables.filter((ele) => ele !== value);
                     selectedCols = selectedCols.filter(ele => ele.tableName !== value);
-                    $(`.column-item[data-table='${value}']`).append(hide);
+                    /*$(`.column-item[data-table='${value}']`).append(hide);
                     $(`.column-item[data-table='${value}'] .col-table-check`).prop(
                         "checked",
                         false
-                    );
+                    );*/
                     $(`#table-section .query-wrapper[data-table="${value}"]`).remove();
-                    $(`#UIColOfTable-${value}`).invisible();
+                    //$(`#UIColOfTable-${value}`).invisible();
+                    $(`#UIColOfTable-${value}`).remove();
                 }
+                console.log(selectedTables);
+                console.log(selectedCols);
             });
 
-            $(".col-table-check").on("click", (e) => {
+            /*$(".col-table-check").on("click", (e) => {
                 const { value, checked, dataset } = e.target;
                 const table = dataset.table;
 
@@ -328,7 +387,7 @@
                         `#table-section .query-wrapper[data-col="${foundCol.name}"][data-table="${table}"]`
                     ).remove();
                 }
-            });
+            });*/
 
             createQueryBtn.on("click", () => {
                 selectedCols = selectedCols.map((ele) => ({
