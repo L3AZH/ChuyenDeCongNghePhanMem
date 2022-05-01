@@ -74,57 +74,72 @@ namespace CDCNPM.Controllers
              * Generate select section
              **/
             queryString += "SELECT ";
-            foreach(ObjectQueryPick item in listObject)
+            if(listObject.Count == 0)
             {
-                if (item.isShow)
+                queryString += " * ";
+            } 
+            else
+            {
+                foreach (ObjectQueryPick item in listObject)
                 {
-                    if (string.IsNullOrEmpty(item.total) ||
-                    string.IsNullOrWhiteSpace(item.total) || "None".Equals(item.total))
+                    if (item.isShow)
                     {
-                        /**
-                        * check if user had a custome name or rename and it had total field
-                        **/
-                        if (string.IsNullOrEmpty(item.columnNameRename) ||
-                            string.IsNullOrWhiteSpace(item.columnNameRename))
+                        if (string.IsNullOrEmpty(item.total) ||
+                        string.IsNullOrWhiteSpace(item.total) || "None".Equals(item.total))
                         {
-                            queryString += String.Format("{0}.{1}, ",
-                                item.columnPick.tableName,
-                                item.columnPick.name);
+                            /**
+                            * check if user had a custome name or rename and it had total field
+                            **/
+                            if (string.IsNullOrEmpty(item.columnNameRename) ||
+                                string.IsNullOrWhiteSpace(item.columnNameRename))
+                            {
+                                queryString += String.Format("{0}.{1}, ",
+                                    item.columnPick.tableName,
+                                    item.columnPick.name);
+                            }
+                            else
+                            {
+                                queryString += String.Format("{0}.{1} as {2}, ",
+                                    item.columnPick.tableName,
+                                    item.columnPick.name,
+                                    item.columnNameRename);
+                            }
                         }
                         else
                         {
-                            queryString += String.Format("{0}.{1} as {2}, ",
-                                item.columnPick.tableName,
-                                item.columnPick.name,
-                                item.columnNameRename);
+                            /**
+                             * check if user had a custome name or rename
+                             **/
+                            if (string.IsNullOrEmpty(item.columnNameRename) ||
+                                string.IsNullOrWhiteSpace(item.columnNameRename))
+                            {
+                                queryString += String.Format("{0}({1}.{2}), ",
+                                    item.total,
+                                    item.columnPick.tableName,
+                                    item.columnPick.name);
+                            }
+                            else
+                            {
+                                queryString += String.Format("{0}({1}.{2}) as {3}, ",
+                                    item.total,
+                                    item.columnPick.tableName,
+                                    item.columnPick.name,
+                                    item.columnNameRename);
+                            }
                         }
-                    }
+                    } 
                     else
                     {
-                        /**
-                         * check if user had a custome name or rename
-                         **/
-                        if (string.IsNullOrEmpty(item.columnNameRename) ||
-                            string.IsNullOrWhiteSpace(item.columnNameRename))
-                        {
-                            queryString += String.Format("{0}({1}.{2}), ",
-                                item.total,
-                                item.columnPick.tableName,
-                                item.columnPick.name);
-                        }
-                        else
-                        {
-                            queryString += String.Format("{0}({1}.{2}) as {3}, ",
-                                item.total,
-                                item.columnPick.tableName,
-                                item.columnPick.name,
-                                item.columnNameRename);
-                        }
+                        queryString += " = ";
                     }
                 }
             }
+            queryString = queryString.Replace("=", " ");
             queryString = queryString.Trim();
-            queryString = queryString.Remove(queryString.Length - 1);
+            if(queryString.EndsWith(','))
+            {
+                queryString = queryString.Remove(queryString.Length - 1);
+            }
             queryString += "\n ";
             /**
              * Generate FROM section
